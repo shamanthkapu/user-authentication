@@ -1,0 +1,711 @@
+/* ==========================================================
+   Auth pages (login + register) - Naruto theme
+   Put this at public/style.css and link it once:
+   <link rel="stylesheet" href="/style.css">
+   Markup expected:  <main> ... </main>   (or <main class="card">)
+   ========================================================== */
+
+@property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+:root {
+    --bg: #fff4e8;
+    --grid: rgba(255, 122, 26, 0.07);
+    --surface: rgba(255, 255, 255, 0.78);
+    --field: rgba(255, 255, 255, 0.7);
+    --text: #231607;
+    --muted: #7a6650;
+    --border: #ecd3b8;
+    --accent: #ff7a1a;
+    --accent-2: #ffb347;
+    --accent-contrast: #1a0d00;
+    --chakra: #3fc1ff;
+    --blob-1: #ffb06b;
+    --blob-2: #ffd9a8;
+    --blob-3: #8fdcff;
+    --error-bg: #fdecec;
+    --error-text: #9b1c1c;
+    --error-edge: #d12f2f;
+    --success-bg: #e8f8ef;
+    --success-text: #146c3a;
+    --success-edge: #1fae5c;
+    --focus: #ff7a1a;
+    --shadow: 0 1px 2px rgba(46, 28, 10, 0.06), 0 8px 24px rgba(140, 80, 20, 0.10), 0 32px 80px rgba(140, 80, 20, 0.18);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0d0905;
+        --grid: rgba(255, 150, 70, 0.06);
+        --surface: rgba(34, 22, 12, 0.72);
+        --field: rgba(255, 255, 255, 0.05);
+        --text: #fbeee0;
+        --muted: #c4a98c;
+        --border: #5c3d22;
+        --accent: #ff9340;
+        --accent-2: #ffc46b;
+        --accent-contrast: #1a0d00;
+        --chakra: #5fd0ff;
+        --blob-1: #a8470a;
+        --blob-2: #7a3a00;
+        --blob-3: #0f6f9a;
+        --error-bg: #3a1c20;
+        --error-text: #ffb4b4;
+        --error-edge: #ff6b6b;
+        --success-bg: #12301f;
+        --success-text: #9ff0c0;
+        --success-edge: #3ddc84;
+        --focus: #ffb070;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.4), 0 40px 90px rgba(0, 0, 0, 0.55);
+        color-scheme: dark;
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+::selection {
+    background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+body {
+    position: relative;
+    margin: 0;
+    min-height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 32px 16px;
+    overflow-x: hidden;
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--bg);
+    background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 44px 44px;
+    background-attachment: fixed;
+}
+
+/* ---------- Animated background blobs ---------- */
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.7;
+}
+
+body::before {
+    width: 46vmax;
+    height: 46vmax;
+    top: -14vmax;
+    left: -10vmax;
+    background: radial-gradient(circle at 30% 30%, var(--blob-1), transparent 65%);
+    animation: drift-a 22s ease-in-out infinite alternate;
+}
+
+body::after {
+    width: 52vmax;
+    height: 52vmax;
+    right: -16vmax;
+    bottom: -18vmax;
+    background:
+        radial-gradient(circle at 60% 40%, var(--blob-2), transparent 62%),
+        radial-gradient(circle at 20% 80%, var(--blob-3), transparent 60%);
+    animation: drift-b 28s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(14vmax, 10vmax) scale(1.15); }
+}
+
+@keyframes drift-b {
+    from { transform: translate(0, 0) scale(1.05); }
+    to   { transform: translate(-12vmax, -8vmax) scale(0.9); }
+}
+
+/* ---------- Card ---------- */
+
+:is(main, .card) {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    padding: 44px 36px 32px;
+    background: var(--surface);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    backdrop-filter: blur(22px) saturate(150%);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    animation: card-in 0.9s var(--ease) both;
+}
+
+/* Top glow inside the card */
+:is(main, .card)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%);
+    pointer-events: none;
+}
+
+/* Chakra light that travels around the card border (orange -> blue) */
+:is(main, .card)::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: conic-gradient(
+        from var(--angle),
+        transparent 0%,
+        transparent 55%,
+        var(--accent) 76%,
+        var(--chakra) 92%,
+        transparent 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+    animation: spin-border 7s linear infinite;
+}
+
+@keyframes spin-border {
+    to { --angle: 360deg; }
+}
+
+@keyframes card-in {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Staggered entrance ---------- */
+
+h1,
+:is(main, .card) > p,
+.error,
+.success,
+form > * {
+    animation: rise 0.7s var(--ease) both;
+}
+
+h1                         { animation-delay: 0.20s; }
+:is(main, .card) > p:first-of-type { animation-delay: 0.28s; }
+.error, .success           { animation-delay: 0.30s; }
+form > :nth-child(1)       { animation-delay: 0.34s; }
+form > :nth-child(2)       { animation-delay: 0.38s; }
+form > :nth-child(3)       { animation-delay: 0.42s; }
+form > :nth-child(4)       { animation-delay: 0.46s; }
+form > :nth-child(5)       { animation-delay: 0.50s; }
+form > :nth-child(6)       { animation-delay: 0.54s; }
+form > :nth-child(7)       { animation-delay: 0.58s; }
+form > :nth-child(8)       { animation-delay: 0.62s; }
+form > :nth-child(n+9)     { animation-delay: 0.66s; }
+:is(main, .card) > p:not(:first-of-type) { animation-delay: 0.80s; }
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Typography ---------- */
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+    font-weight: 750;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    text-align: center;
+}
+
+:is(main, .card) > p:first-of-type {
+    margin: 0 0 28px;
+    color: var(--muted);
+    text-align: center;
+}
+
+h2, h3 {
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+}
+
+/* ---------- Rasengan (spinning chakra orb above the title) ---------- */
+
+/* Real element: <div class="rasengan" aria-hidden="true"></div> */
+.rasengan {
+    display: block;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #fff 0 8%, rgba(255, 255, 255, 0) 32%),
+        repeating-conic-gradient(
+            from 0deg,
+            rgba(255, 255, 255, 0.95) 0deg 7deg,
+            var(--chakra) 7deg 20deg,
+            rgba(255, 255, 255, 0.15) 20deg 30deg
+        );
+    -webkit-mask: radial-gradient(circle, #000 55%, transparent 71%);
+    mask: radial-gradient(circle, #000 55%, transparent 71%);
+    filter: drop-shadow(0 0 10px var(--chakra)) drop-shadow(0 0 26px var(--chakra));
+    animation:
+        rasengan-spin 0.9s linear infinite,
+        rasengan-float 3.4s ease-in-out infinite;
+}
+
+@keyframes rasengan-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes rasengan-float {
+    0%, 100% { translate: 0 0; scale: 1; }
+    50%      { translate: 0 -6px; scale: 1.06; }
+}
+
+/* ---------- Alerts ---------- */
+
+.error,
+.success {
+    margin: 0 0 22px;
+    padding: 12px 16px;
+    border-left: 4px solid;
+    border-radius: 10px;
+    font-size: 0.925rem;
+}
+
+.error {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-left-color: var(--error-edge);
+    animation:
+        rise 0.7s var(--ease) 0.3s both,
+        shake 0.5s 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border-left-color: var(--success-edge);
+}
+
+@keyframes shake {
+    10%, 90%      { transform: translateX(-1px); }
+    20%, 80%      { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-5px); }
+    40%, 60%      { transform: translateX(5px); }
+}
+
+/* ---------- Form ---------- */
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 7px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+/* The label of the field being edited lights up */
+form > label:has(+ input:focus),
+form > label:has(+ select:focus),
+form > label:has(+ textarea:focus) {
+    color: var(--accent);
+}
+
+/* Every text-like input, including the name field */
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="hidden"]),
+select,
+textarea {
+    display: block;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 13px 16px;
+    background: var(--field);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font: inherit;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s var(--ease),
+        background-color 0.2s ease;
+}
+
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+::placeholder {
+    color: var(--muted);
+    opacity: 0.75;
+}
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):hover,
+select:hover,
+textarea:hover {
+    border-color: var(--muted);
+}
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--focus);
+    background: var(--surface);
+    transform: translateY(-1px);
+    box-shadow:
+        0 0 0 4px color-mix(in srgb, var(--focus) 22%, transparent),
+        0 10px 24px color-mix(in srgb, var(--focus) 16%, transparent);
+}
+
+/* Red only after the user has typed something invalid */
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+    border-color: var(--error-edge);
+}
+
+/* Browser autofill (Chrome paints it yellow/white by default) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    caret-color: var(--text);
+    -webkit-box-shadow: 0 0 0 1000px color-mix(in srgb, var(--accent) 12%, var(--bg)) inset;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ---------- File picker (profile picture) ---------- */
+
+input[type="file"] {
+    width: 100%;
+    margin: 4px 0 8px;
+    padding: 14px;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.925rem;
+    background: var(--field);
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+input[type="file"]:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 7%, var(--field));
+}
+
+input[type="file"]:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+}
+
+input[type="file"]::file-selector-button {
+    margin-right: 14px;
+    padding: 9px 16px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    color: var(--accent-contrast);
+    border: 0;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s var(--ease), box-shadow 0.2s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Helper text under a field, e.g. <p class="hint">Allowed formats...</p> */
+.hint,
+form > p {
+    margin: 0 0 20px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--muted);
+}
+
+/* Checkbox / radio */
+input[type="checkbox"],
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0 8px 0 0;
+    accent-color: var(--accent);
+    vertical-align: middle;
+}
+
+/* ---------- Buttons ---------- */
+
+button[type="submit"],
+.btn {
+    position: relative;
+    display: inline-block;
+    margin-top: 8px;
+    padding: 14px 20px;
+    overflow: hidden;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    background-size: 160% 100%;
+    background-position: 0% 0;
+    color: var(--accent-contrast);
+    border: 0;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+    transition:
+        background-position 0.5s var(--ease),
+        transform 0.25s var(--ease),
+        box-shadow 0.25s ease,
+        opacity 0.2s ease;
+}
+
+form > button[type="submit"] {
+    width: 100%;
+}
+
+/* Light sweep on hover */
+button[type="submit"]::after,
+.btn::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-20deg);
+}
+
+button[type="submit"]:hover,
+.btn:hover {
+    background-position: 100% 0;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+button[type="submit"]:hover::after,
+.btn:hover::after {
+    left: 130%;
+    transition: left 0.7s var(--ease);
+}
+
+button[type="submit"]:active,
+.btn:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+button[type="submit"]:focus-visible,
+.btn:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+}
+
+button[type="submit"]:disabled,
+.btn[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Loading state: add class "is-loading" to the button. Shows a spinning shuriken. */
+button.is-loading {
+    pointer-events: none;
+    color: transparent;
+}
+
+button.is-loading::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    background: var(--accent-contrast);
+    clip-path: polygon(
+        50% 0%, 61% 39%, 100% 50%, 61% 61%,
+        50% 100%, 39% 61%, 0% 50%, 39% 39%
+    );
+    animation: spin 0.45s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Secondary button: <a class="btn btn-ghost"> or <button class="btn btn-ghost"> */
+.btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    box-shadow: none;
+}
+
+.btn-ghost:hover {
+    background: var(--field);
+    border-color: var(--accent);
+    box-shadow: none;
+}
+
+/* ---------- Divider: <div class="divider">or</div> ---------- */
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* ---------- Links ---------- */
+
+:is(main, .card) > p {
+    margin: 0;
+}
+
+:is(main, .card) > p:not(:first-of-type) {
+    margin-top: 18px;
+    font-size: 0.925rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+a {
+    position: relative;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+a:not(.btn)::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.35s var(--ease);
+}
+
+a:not(.btn):hover::after,
+a:not(.btn):focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+a:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+/* ---------- Profile picture preview (home page, optional) ---------- */
+
+img.avatar,
+.avatar {
+    display: block;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 16px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 2px var(--accent), 0 10px 24px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* ---------- Scrollbar ---------- */
+
+html {
+    scrollbar-color: color-mix(in srgb, var(--accent) 50%, transparent) transparent;
+    scrollbar-width: thin;
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 480px) {
+    body {
+        place-items: start center;
+        padding-top: 28px;
+    }
+
+    :is(main, .card) {
+        padding: 34px 22px 26px;
+        border-radius: 18px;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+
+    /* 16px+ stops iOS Safari from zooming on focus */
+    input,
+    select,
+    textarea {
+        font-size: 1rem;
+    }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
